@@ -1,0 +1,9 @@
+Facebook User Interactions Dataset:
+
+The dataset contains 2421 interactions from 221 Facebook users. Each user is represented using a unique id within the dataset (1-221). The interaction types are number of common page likes, number of common photo tags and number of wall posts. In each row, the first two numbers denote id of the users involved, and the next three denote the number of common page likes, number of common photo tags and number of wall posts between the two users. I sincerely thank Rajshakhar Paul, Tanmoy Sen, Madhusudan Basak, and Ishat E Rabban for helping me with data collection. Kindly cite the following reference if you use this dataset. 
+
+Facebook User Interactions Dataset:
+
+The dataset contains 2421 interactions from 221 Facebook users. Each user is represented using a unique id within the dataset (1-221). The interaction types are number of common page likes, number of common photo tags and number of wall posts. In each row, the first two numbers denote id of the users involved, and the next three denote the number of common page likes, number of common photo tags and number of wall posts between the two users. I sincerely thank Rajshakhar Paul, Tanmoy Sen, Madhusudan Basak, and Ishat E Rabban for helping me with data collection. Kindly cite the following reference if you use this dataset. 
+
+Reference: Himel Dev, Mohammed Eunus Ali, and Tanzima Hashem. User Interaction Based Community Detection in Online Social Networks. The 19th International Conference on Database Systems for Advanced Applications (DASFAA), Bali, Indonesia, April, 2014.
