@@ -10,17 +10,67 @@ namespace GraphMaxClique
 {
   class GraphStructureProgram
   {
-    static void Main(string[] args)
+        static int[] degree;   // degree of vertices
+        static int[,] A;      // 0/1 adjacency matrix
+        static int n;          // n vertices
+        static long nodes;
+
+        static void readDIMACS(String fname)
+        {
+            String s = "";
+            
+            StreamReader sr = new StreamReader(fname);
+            String line = null;
+            try {
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Contains("p") == true && line.IndexOf('p')==0)
+                    {
+                        string[] temp = line.Split(' ');
+                        n = int.Parse(temp[2]);
+                        int m = int.Parse(temp[3]);
+                        degree = new int[n+1];
+                        A = new int[n+1, n+1];
+                    }
+
+                    //System.out.println("NO of edges.."+m);
+
+
+                    else if (line.Contains("e") == true && line.IndexOf('e') == 0)
+                    {
+                        string[] temp = line.Split(' ');
+                        //while (sc.hasNext()){
+                        // s     = sc.next(); // skip "edge"
+                        int i = int.Parse(temp[1]);
+                        int j = int.Parse(temp[2]);
+                        degree[i]++; degree[j]++;
+                        //    System.out.println("degree of.."+ i+"=="+ degree[i]+
+                        //          "degree of.."+ i+"=="+ degree[j]);
+                        A[i, j] = A[j, i] = 1;
+                    }
+
+                }
+            }
+            catch (Exception ex) { 
+            }
+            sr.Close();
+        }
+        public static string graphFile = null;
+        public static void Main(string[] args)
     {
-      try
+           
+            try
       {
         Console.WriteLine("\nBegin graph for maximum clique demo\n");
         
         //string graphFile = "..\\..\\SimpleGraph.txt";
         //MyGraph.ValidateGraphFile(graphFile, "SIMPLE");
 
-        //string graphFile = "..\\..\\DimacsGraph.clq";
+       // graphFile = "..\\..\\DimacsGraph.clq";
         string graphFile = "..\\..\\Test.clq";
+        //String fname = "DIMACS_cliques\\Test.clq";
+          //      System.out.println("read data");
+                readDIMACS(graphFile);
                 Console.WriteLine("Validating DIMACS format graph file " + graphFile);
         MyGraph.ValidateGraphFile(graphFile, "DIMACS");
         Console.WriteLine("Graph file validation complete");
@@ -28,24 +78,41 @@ namespace GraphMaxClique
         //MyGraph graph = new MyGraph(graphFile, "SIMPLE");
         Console.WriteLine("\nLoading graph into memory");
         MyGraph graph = new MyGraph(graphFile, "DIMACS");
+              //  n = graph.NumberNodes;
+             //   degree = graph.NumberEdges;
+        MultipleC mc = new MultipleC(n, A, degree);
+                mc.search();
 
-        Console.WriteLine("\nValidating graph data structure");
+                Console.WriteLine("Max Clique");
+                Console.WriteLine(mc.maxSize + " " + mc.nodes + " " );
+                for (int i = 0; i < mc.n; i++) if (mc.solution[i] == 1) {
+                        Console.WriteLine(i + " ");
+                    }
+                Console.WriteLine("\nValidating graph data structure");
         graph.ValidateGraph();
         Console.WriteLine("Graph data structure validation complete");
-
-        Console.WriteLine("\nGraph adjaceny representation: \n");
-        Console.WriteLine(graph.ToString());
-
+                string name = GraphStructureProgram.graphFile + "graph.csv";
+         StreamWriter sw = new StreamWriter(name);
+         sw.WriteLine("\nGraph adjaceny representation: \n");
+                Console.WriteLine("\nGraph adjaceny representation: \n");
+               
+       //         Console.WriteLine(graph.ToString());
+                sw.WriteLine(graph.ToString());
+                sw.Close();
         //graph.ValidateGraph();
 
         Console.WriteLine("\nAre nodes 5 and 8 adjacent? " + graph.AreAdjacent(5,8));
-        Console.WriteLine("Number neighbors of node 4 = " + graph.NumberNeighbors(4));
-        //Console.WriteLine(graph.NumberEdges);
-        //Console.WriteLine(graph.NumberNeighbors(4));
-        //Console.WriteLine(graph.AreAdjacent(2, 4));
-        //Console.WriteLine(graph.AreAdjacent(4, 2));
-        //Console.WriteLine(graph.AreAdjacent(2, 6));
+                for (int i = 0; i < graph.NumberNodes; i++)
+                {
+                //    Console.WriteLine("Number neighbors of node"+  i +"= " + graph.NumberNeighbors(i));
+                }
+                //Console.WriteLine(graph.NumberEdges);
+                //Console.WriteLine(graph.NumberNeighbors(4));
+                //Console.WriteLine(graph.AreAdjacent(2, 4));
+                //Console.WriteLine(graph.AreAdjacent(4, 2));
+                //Console.WriteLine(graph.AreAdjacent(2, 6));
 
+                graph.writeFriends();
 
         Console.WriteLine("\nEnd graph for maximum clique demo\n");
         Console.ReadLine();
@@ -64,65 +131,100 @@ namespace GraphMaxClique
     private int numberNodes;
     private int numberEdges;
     private int[] numberNeighbors; // node degrees
-
-    public MyGraph(string graphFile, string fileFormat)
+        private int[][] NodesNeighbors;
+        static int[] degree;   // degree of vertices
+        static int[][] A;      // 0/1 adjacency matrix
+        static int n;
+        public MyGraph(string graphFile, string fileFormat)
     {
       if (fileFormat.ToUpper() == "DIMACS")
         LoadDimacsFormatGraph(graphFile);
       else
         throw new Exception("Format " + fileFormat + " not supported");
     }
-    
-    //private void LoadSimpleFormatGraph(string graphFile)
-    //{
-    //  FileStream ifs = new FileStream(graphFile, FileMode.Open);
-    //  StreamReader sr = new StreamReader(ifs);
-    //  string line = "";
-    //  string[] tokens = null;
-    //  string[] subtokens = null;
-    //  int numNodes = 0;
-    //  int numEdges = 0;
-    //  while ((line = sr.ReadLine()) != null)
-    //  {
-    //    line = line.Trim();
-    //    if (line.StartsWith("//") == false)
-    //      ++numNodes;
-    //  }
-    //  sr.Close();
-    //  ifs.Close();
-      
-    //  this.data = new BitMatrix(numNodes);
-    //  this.numberNeighbors = new int[numNodes];
-      
-    //  ifs = new FileStream(graphFile, FileMode.Open);
-    //  sr = new StreamReader(ifs);
-      
-    //  while ((line = sr.ReadLine()) != null)
-    //  {
-    //    line = line.Trim();
-    //    if (line.StartsWith("//") == true) continue;
-    //    tokens = line.Split(':');
-    //    int fromNode = int.Parse(tokens[0]);
-    //    subtokens = tokens[1].Split(',');
-    //    numEdges += subtokens.Length;
-    //    this.numberNeighbors[fromNode] = subtokens.Length;
-    //    for (int j = 0; j < subtokens.Length; ++j)
-    //    {
-          
-    //      int toNode = int.Parse(subtokens[j]);
-    //      this.data.SetValue(fromNode, toNode, true);
-    //      this.data.SetValue(toNode, fromNode, true);
-    //    }
-    //  }
-    //  sr.Close();
-    //  ifs.Close();
-      
-    //  this.numberNodes = numNodes;
-    //  this.numberEdges = numEdges / 2;
-    //  return;
-    //} // LoadSimpleFormatGraph
 
-    private void LoadDimacsFormatGraph(string graphFile)
+        //private void LoadSimpleFormatGraph(string graphFile)
+        //{
+        //  FileStream ifs = new FileStream(graphFile, FileMode.Open);
+        //  StreamReader sr = new StreamReader(ifs);
+        //  string line = "";
+        //  string[] tokens = null;
+        //  string[] subtokens = null;
+        //  int numNodes = 0;
+        //  int numEdges = 0;
+        //  while ((line = sr.ReadLine()) != null)
+        //  {
+        //    line = line.Trim();
+        //    if (line.StartsWith("//") == false)
+        //      ++numNodes;
+        //  }
+        //  sr.Close();
+        //  ifs.Close();
+
+        //  this.data = new BitMatrix(numNodes);
+        //  this.numberNeighbors = new int[numNodes];
+
+        //  ifs = new FileStream(graphFile, FileMode.Open);
+        //  sr = new StreamReader(ifs);
+
+        //  while ((line = sr.ReadLine()) != null)
+        //  {
+        //    line = line.Trim();
+        //    if (line.StartsWith("//") == true) continue;
+        //    tokens = line.Split(':');
+        //    int fromNode = int.Parse(tokens[0]);
+        //    subtokens = tokens[1].Split(',');
+        //    numEdges += subtokens.Length;
+        //    this.numberNeighbors[fromNode] = subtokens.Length;
+        //    for (int j = 0; j < subtokens.Length; ++j)
+        //    {
+
+        //      int toNode = int.Parse(subtokens[j]);
+        //      this.data.SetValue(fromNode, toNode, true);
+        //      this.data.SetValue(toNode, fromNode, true);
+        //    }
+        //  }
+        //  sr.Close();
+        //  ifs.Close();
+
+        //  this.numberNodes = numNodes;
+        //  this.numberEdges = numEdges / 2;
+        //  return;
+        //} // LoadSimpleFormatGraph
+
+       /* static void readDIMACS(string graphFile) 
+        {
+            FileStream ifs = new FileStream(graphFile, FileMode.Open);
+            StreamReader sr = new StreamReader(ifs);
+            string line = "";
+            string[] tokens = null;
+
+            // advance to and get the p line (ex: "p edge 9 16")
+            line = sr.ReadLine(); // read first line of file as a priming read
+            line = line.Trim();
+            while (line != null && line.StartsWith("p") == false)
+            {
+                line = sr.ReadLine();
+                line = line.Trim();
+            }
+
+            tokens = line.Split(' ');
+            while (sc.hasNext() && !s.equals("p")) s = sc.next();
+            sc.next();
+            n      = sc.nextInt();
+    int m = sc.nextInt();
+        degree = new int[n];
+	A      = new int[n][n];
+	while (sc.hasNext()){
+	    s     = sc.next(); // skip "edge"
+	    int i = sc.nextInt() - 1;
+        int j = sc.nextInt() - 1;
+        degree[i]++; degree[j]++;
+	    A[i][j] = A[j][i] = 1;
+	}
+    sc.close();
+    } */
+private void LoadDimacsFormatGraph(string graphFile)
     {
       FileStream ifs = new FileStream(graphFile, FileMode.Open);
       StreamReader sr = new StreamReader(ifs);
@@ -144,7 +246,7 @@ namespace GraphMaxClique
  
       sr.Close(); ifs.Close();
 
-      this.data = new BitMatrix(numNodes);
+      this.data = new BitMatrix(numNodes+1);
 
       ifs = new FileStream(graphFile, FileMode.Open); // reopen file
       sr = new StreamReader(ifs);
@@ -154,24 +256,25 @@ namespace GraphMaxClique
         if (line.StartsWith("e") == true) // (ex: "e 7 4")
         {
           tokens = line.Split(' ');
-          int nodeA = int.Parse(tokens[1]) - 1; // DIMACS is 1-based. subtract 1 to convert to 0-based
-          int nodeB = int.Parse(tokens[2]) - 1;
+          int nodeA = int.Parse(tokens[1]) ; // DIMACS is 1-based. subtract 1 to convert to 0-based
+          int nodeB = int.Parse(tokens[2]) ;
           data.SetValue(nodeA, nodeB, true);
           data.SetValue(nodeB, nodeA, true);
         }
       }
       sr.Close(); ifs.Close();
       
-      this.numberNeighbors = new int[numNodes];
-      for (int row = 0; row < numNodes; ++row)
+      this.numberNeighbors = new int[numNodes+1];
+      for (int row = 1; row <= numNodes; ++row)
       {
         int count = 0;
-        for (int col = 0; col < numNodes; ++col)
+        for (int col = 1; col <= numNodes; ++col)
         {
           if (data.GetValue(row, col) == true)
             ++count;
         }
         numberNeighbors[row] = count;
+                //NodesNeighbors
       }
       
       this.numberNodes = numNodes;
@@ -189,6 +292,26 @@ namespace GraphMaxClique
       get { return this.numberEdges; }
     }
 
+        public void writeFriends()
+        {
+            string name = GraphStructureProgram.graphFile + "Friends.csv";
+            StreamWriter sw = new StreamWriter(name);
+            sw.WriteLine("Node Number"+","+"Number of Freinds");
+            int col=1;
+            try {
+                for (col = 1; col <= this.NumberNodes; col++)
+                {
+                   // int temp = col + 1;
+                    //  for (int i = this.numberNodes; i < this.NumberNeighbors.GetLength(1); i++) { 
+                    sw.WriteLine(col + "," + this.NumberNeighbors(col));
+                }
+            }
+            catch(Exception ex) {
+                System.Console.WriteLine("Crash in.."+ col);
+            }
+
+            sw.Close();
+        }
     public int NumberNeighbors(int node)
     {
       return this.numberNeighbors[node];
